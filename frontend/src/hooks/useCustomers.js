@@ -10,7 +10,11 @@ export function useCustomers() {
   const fetchCustomers = useCallback(async (filters = {}) => {
     setLoading(true); setError(null);
     try {
-      const res = await customerAPI.list({ limit: 20, ...filters });
+      // Strip empty string params — empty strings fail server-side isIn() validation
+      const clean = Object.fromEntries(
+        Object.entries({ limit: 20, ...filters }).filter(([, v]) => v !== '')
+      );
+      const res = await customerAPI.list(clean);
       setCustomers(res.data);
       setMeta({ total: res.total, page: res.page, pages: res.pages });
     } catch (e) {
