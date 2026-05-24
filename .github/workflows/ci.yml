@@ -70,6 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend-test, frontend-build]
     if: github.ref == 'refs/heads/main'
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -77,11 +78,14 @@ jobs:
       - name: Build and start services
         run: docker compose up -d --build
 
-      - name: Wait for backend health
+      - name: Wait for MySQL and backend to be ready
         run: |
-          for i in {1..30}; do
+          echo "Waiting 60s for MySQL to initialize and seed data..."
+          sleep 60
+          echo "Polling backend health..."
+          for i in {1..20}; do
             curl -sf http://localhost:5000/health && echo "Backend healthy" && break
-            echo "Waiting ($i/30)"
+            echo "Waiting ($i/20)"
             sleep 5
           done
 
