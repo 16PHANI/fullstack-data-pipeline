@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ----------------------------------------------------------------
-  # Backend — lint + test
+  # Backend — test
   # ----------------------------------------------------------------
   backend-test:
     name: Backend Tests
@@ -24,11 +24,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run Jest tests
         run: npm test
@@ -50,11 +48,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build React app
         run: npm run build
@@ -85,23 +81,18 @@ jobs:
         run: |
           for i in {1..30}; do
             curl -sf http://localhost:5000/health && echo "Backend healthy" && break
-            echo "Waiting… ($i/30)"
+            echo "Waiting ($i/30)"
             sleep 5
           done
 
       - name: Run API smoke tests
         run: |
-          # Health check
           curl -sf http://localhost:5000/health | grep '"status":"ok"'
-          echo "✅ Health OK"
-
-          # List customers
+          echo "Health OK"
           curl -sf "http://localhost:5000/api/customers?limit=5" | grep '"success":true'
-          echo "✅ List customers OK"
-
-          # Analytics
+          echo "List OK"
           curl -sf http://localhost:5000/api/customers/analytics | grep '"success":true'
-          echo "✅ Analytics OK"
+          echo "Analytics OK"
 
       - name: Stop services
         if: always()
